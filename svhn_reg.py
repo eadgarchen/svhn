@@ -53,6 +53,7 @@ def inference(x):
 
 	# Start build the convolutional layer and max pool layer.
 	# The 1st convolutional layer - map 3 features (RGB) image to 48 features.
+	# Output of 1st is 64x64x48
 	with tf.name_scope('conv1'):
 		W_conv1 = weight_variable([5, 5, 3, 48])
 		b_conv1 = bias_variable(48)
@@ -73,6 +74,7 @@ def inference(x):
 		h_drop1 = tf.nn.dropout(h_norm1, keep_prob)
 
 	# The 2nd convolutional layer - map 48 features to 64 features.
+	# Output of 2nd is 64x64x64, max pool window size is 1x1.
 	with tf.name_scope('conv2'):
 		W_conv2 = weight_variable([5, 5, 48, 64])
 		b_conv2 = bias_variable(64)
@@ -93,6 +95,7 @@ def inference(x):
 		h_drop2 = tf.nn.dropout(h_norm2, keep_prob)
 
 	# The 3rd convolutional layer - map 64 features to 128 features.
+	# Output of 3rd is 32x32x128.
 	with tf.name_scope('conv3'):
 		W_conv3 = weight_variable([5, 5, 64, 128])
 		b_conv3 = bias_variable(128)
@@ -113,6 +116,7 @@ def inference(x):
 		h_drop3 = tf.nn.dropout(h_norm3, keep_prob)
 
 	# The 4th convolutional layer - map 128 features to 160 features.
+	# Output of 4th is 32x32x160
 	with tf.name_scope('conv4'):
 		W_conv4 = weight_variable([5, 5, 128, 160])
 		b_conv4 = bias_variable(160)
@@ -134,7 +138,7 @@ def inference(x):
 
 	# Build the locally connected layer.
 	# After 4 round of downsampling, our 128x128x3 image is down to
-	# 8x8x160 feature maps(see each pooling layer), now map this to 192 features.
+	# 32x32x160 feature maps(see each pooling layer), now map this to 192 features.
 	with tf.name_scope('lc1'):
 		W_lc1 = weight_variable([8 * 8 * 160, 192])
 		b_lc1 = bias_variable([192])
@@ -147,7 +151,7 @@ def inference(x):
 		h_drop5 = tf.nn.dropout(h_lc1, keep_prob)
 
 	# Build the fully connected layer.
-	# Map 192 to 3072 features.
+	# Map 32x32x192 to 32x32x3072 features.
 	with tf.name_scope('fc1'):
 		W_fc1 = weight_variable([192, 3072])
 		b_fc1 = bias_variable([3072])
@@ -159,7 +163,7 @@ def inference(x):
 	with tf.name_scope('drop6'):
 		h_drop5 = tf.nn.dropout(h_fc1, keep_prob)
 
-	# Map the 1024 features to 10 classes, one for each digit
+	# Map the 32x32x3072 features to [None, 10] classes, one for each digit
 	with tf.name_scope('softmax'):
 		W_fc2 = weight_variable([3072, 10])
 		b_fc2 = bias_variable([10])
@@ -195,16 +199,57 @@ def stride_variable(shape):
 def main():
 	"""
 	"""
-	# Import data from svhn_input.
+	# Import data from svhn_input, input_data is imported from the svhn_input.py
+	# TODO...
+	svhn = input_data.read_data_set()
 	
-	# Create the model, X, Y,
-	
-	# Define the optimizer and loss
-	
-	# Build the graph, call inference()
-	# 
-	
+	# Create the x, y_
+	x = tf.placeholder(tf.float32, [None, 784])
+	y_ = tf.placeholder(tf.float32, [None, 10])
 
+	# Create the model
+	y_conv, keep_prob = inference(x)
+	
+	# Define the loss
+	with tf.name_scope('loss'):
+		cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels = y_,
+																logits = y_conv)
+	cross_entropy = tf.reduce_mean(cross_entropy)
+	
+	with tf.name_scope('adam_optimizer'):
+		train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+	
+	# Define the accuracy
+	with tf.name_scope('accuracy'):
+		correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
+		correct_prediction = tf.cast(correct_prediction, tf.float32)
+	accuracy = tf.reduce_mean(correct_prediction)
+
+	# Save the graph
+	graph_location = tempfile.mkdtemp()
+	print('Saving graph to: %s', % graph_location)
+	train_writer = tf.summary.FileWriter(graph_location)
+	train_writer.add_graph(tf.get_default_graph())
+	
+	# Training and inference
+	with tf.Session() as sess:
+		sess.run(tf.global_variables_initializer())
+
+		# Training the graph
+		for i in range(svhn_flags.TRAINING_DATASIZE):
+			# NEED TO CHANGE With SVHN DATASET
+			batch = svhn.train.next_batch(svhn_flags.BATCH_SIZE)
+			if i % 100 == 0:
+				train_accuracy = accuracy.eval(feed_dict = {
+					x : batch[0], y_ : batch[1], keep_prob: 1.0})
+					})
+				print('step %d, training accuracy %g' % (i, train_accuracy))
+			train_step.run(feed_dict = {x: batch[0], y_ : batch[1], keep_prob : 1.0})
+
+		# Test the accuracy of the inference
+		print('test accuracy %g' % accuracy.eval(feed_dict = {
+			x : svhn.test.images, y_ : svhn.test.labels, keep_prob : 1.0}
+			}))
 
 	pass
 

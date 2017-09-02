@@ -17,5 +17,12 @@ import os
 Directory Flags
 """
 
-base_dir = "/home/wchen/codes/svhn"
+BASE_SIZE = "/home/wchen/codes/svhn"
+
+"""
+Training and Inference Flags
+"""
+
+BATCH_SIZE  = 50
+TRAINING_DATASIZE = 20000
 
