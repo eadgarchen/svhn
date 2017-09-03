@@ -21,12 +21,20 @@ import svhn_flags
 
 from scipy.io import loadmat as load
 
+FLAGS = tf.app.flags.FLAGS
+
+svhndata_path = FLAGS.svhndata_path
+
 def input_data():
-	train_data = load(SVHNDATA_PATH + 'train_32x32.mat', variable_names = 'X').get('X')
-	train_labels = load(SVHNDATA_PATH + 'train_32x32.mat', variable_names = 'y').get('y')
-	test_data = load(SVHNDATA_PATH + 'test_32x32.mat', variable_names = 'X').get('X')
-	test_labels = load(SVHNDATA_PATH + 'test_32x32.mat', variable_names = 'y').get('y')
-	# TODO extra dataset...
+	train_dataset = load(svhndata_path + 'train_32x32.mat', variable_names = 'X').get('X')
+	train_labels = load(svhndata_path + 'train_32x32.mat', variable_names = 'y').get('y')
+	test_dataset = load(svhndata_path + 'test_32x32.mat', variable_names = 'X').get('X')
+	test_labels = load(svhndata_path + 'test_32x32.mat', variable_names = 'y').get('y')
+	valid_dataset = load(svhndata_path + 'extra_32x32.mat', variable_names = 'X').get('X')
+	valid_labels = load(svhndata_path + 'extra_32x32.mat', variable_names = 'y').get('y')
 	
-	print(train_data.shape, train_labels.shape)
-	print(test_data.shape, test_labels.shape)
+	print(train_dataset.shape, train_labels.shape)
+	print(test_dataset.shape, test_labels.shape)
+	print(valid_dataset.shape, valid_labels.shape)
+
+	return train_dataset, train_labels, valid_dataset, valid_labels, test_dataset, test_labels

@@ -237,9 +237,9 @@ def main():
 		sess.run(tf.global_variables_initializer())
 
 		# Training the graph
-		for i in range(svhn_flags.TRAINING_DATASIZE):
+		for i in range(svhn_flags.training_datasize):
 			# NEED TO CHANGE With SVHN DATASET
-			batch = svhn_dataset.train.next_batch(svhn_flags.BATCH_SIZE)
+			batch = svhn_dataset.train.next_batch(svhn_flags.batch_size)
 			if i % 100 == 0:
 				train_accuracy = accuracy.eval(feed_dict = {
 					x : batch[0], y_ : batch[1], keep_prob: 1.0})
