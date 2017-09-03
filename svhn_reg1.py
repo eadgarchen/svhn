@@ -16,6 +16,7 @@ import tempfile
 
 import tensorflow as tf
 import svhn_flags
+import svhn_input
 
 FLAGS = None
 
@@ -199,9 +200,9 @@ def stride_variable(shape):
 def main():
 	"""
 	"""
-	# Import data from svhn_input, input_data is imported from the svhn_input.py
+	# Import dataset, input_data is imported from the svhn_input.py
 	# TODO...
-	svhn = input_data.read_data_set()
+	svhn_dataset = input_data.read_data_set()
 	
 	# Create the x, y_
 	x = tf.placeholder(tf.float32, [None, 784])
@@ -227,7 +228,7 @@ def main():
 
 	# Save the graph
 	graph_location = tempfile.mkdtemp()
-	print('Saving graph to: %s', % graph_location)
+	print('Saving graph to: %s' % graph_location)
 	train_writer = tf.summary.FileWriter(graph_location)
 	train_writer.add_graph(tf.get_default_graph())
 	
@@ -238,25 +239,23 @@ def main():
 		# Training the graph
 		for i in range(svhn_flags.TRAINING_DATASIZE):
 			# NEED TO CHANGE With SVHN DATASET
-			batch = svhn.train.next_batch(svhn_flags.BATCH_SIZE)
+			batch = svhn_dataset.train.next_batch(svhn_flags.BATCH_SIZE)
 			if i % 100 == 0:
 				train_accuracy = accuracy.eval(feed_dict = {
 					x : batch[0], y_ : batch[1], keep_prob: 1.0})
-					})
 				print('step %d, training accuracy %g' % (i, train_accuracy))
 			train_step.run(feed_dict = {x: batch[0], y_ : batch[1], keep_prob : 1.0})
 
 		# Test the accuracy of the inference
 		print('test accuracy %g' % accuracy.eval(feed_dict = {
-			x : svhn.test.images, y_ : svhn.test.labels, keep_prob : 1.0}
-			}))
+			x : svhn_dataset.test.images, y_ : svhn_dataset.test.labels, keep_prob : 1.0}))
 
 	pass
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--data_dir', type=str,
-                    default='/tmp/tensorflow/mnist/input_data',
+                    default='/tmp/svhn/input_data',
                     help='Directory for storing input data')
 	FLAGS, unparsed = parser.parse_known_args()
 	tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)

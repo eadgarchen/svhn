@@ -21,3 +21,12 @@ import svhn_flags
 
 from scipy.io import loadmat as load
 
+def input_data():
+	train_data = load(SVHNDATA_PATH + 'train_32x32.mat', variable_names = 'X').get('X')
+	train_labels = load(SVHNDATA_PATH + 'train_32x32.mat', variable_names = 'y').get('y')
+	test_data = load(SVHNDATA_PATH + 'test_32x32.mat', variable_names = 'X').get('X')
+	test_labels = load(SVHNDATA_PATH + 'test_32x32.mat', variable_names = 'y').get('y')
+	# TODO extra dataset...
+	
+	print(train_data.shape, train_labels.shape)
+	print(test_data.shape, test_labels.shape)

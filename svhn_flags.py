@@ -17,12 +17,21 @@ import os
 Directory Flags
 """
 
-BASE_SIZE = "/home/wchen/codes/svhn"
+DATASET_PATH = "/home/wchen/codes/svhn/dataset/"
 
 """
 Training and Inference Flags
 """
 
-BATCH_SIZE  = 50
+batch_size  = 64
+patch_size = 5 # The conv kernel size
+depth1 = 16
+depth2 = 32
+depth3 = 64
+num_hidden1 = 64
+num_hidden2 = 32
+num_channels = 1 # Gray.
+num_labels = 10
+
 TRAINING_DATASIZE = 20000
 
